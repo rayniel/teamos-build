@@ -1,0 +1,10 @@
+PRETTY_NAME="TeamOS"
+NAME="TeamOS"
+VERSION_ID="1.0"
+VERSION="1.0 (internal)"
+VERSION_CODENAME=internal
+ID=teamos
+ID_LIKE=debian
+HOME_URL="https://example.internal"
+SUPPORT_URL="https://example.internal/support"
+BUG_REPORT_URL="https://example.internal/support"
