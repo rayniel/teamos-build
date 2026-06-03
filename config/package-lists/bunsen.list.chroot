@@ -1,0 +1,9 @@
+# Intentionally minimal for phase 1.
+# Add selected BunsenLabs-related packages only after dependency review.
+# Recommended review targets:
+# - bunsen-configs
+# - bunsen-configs-live
+# - bunsen-welcome
+# - bunsen-os-release
+# - bunsen-themes
+# - bunsen-common
