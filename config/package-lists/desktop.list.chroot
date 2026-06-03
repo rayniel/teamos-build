@@ -23,7 +23,7 @@ thunar-archive-plugin
 thunar-volman
 gvfs
 gvfs-backends
-xfce4-terminal
+alacritty
 file-roller
 p7zip-full
 unzip
