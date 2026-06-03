@@ -1,0 +1,32 @@
+#!/bin/sh
+# Install BunsenLabs themes (GTK + icons) from the official BunsenLabs apt repository.
+# This hook runs in the chroot during live-build, after main packages are installed.
+#
+# Key source:
+#   https://github.com/BunsenLabs/bunsen-netinstall/blob/carbon/sysfiles1/etc/apt/trusted.gpg.d/bunsen-release.asc
+# Repository:
+#   http://pkg.bunsenlabs.org/debian trixie-backports main
+#   (Carbon = BunsenLabs release tracking Debian trixie)
+
+set -e
+
+echo "[teamos hook] Setting up BunsenLabs apt repository..."
+
+# 1. Install signing key from the official BunsenLabs netinstall repo
+mkdir -p /etc/apt/trusted.gpg.d
+wget -qO /etc/apt/trusted.gpg.d/bunsen-release.asc \
+    "https://raw.githubusercontent.com/BunsenLabs/bunsen-netinstall/carbon/sysfiles1/etc/apt/trusted.gpg.d/bunsen-release.asc"
+
+# 2. Add apt source (signed-by references the key above)
+cat > /etc/apt/sources.list.d/bunsenlabs.list << 'EOF'
+deb [signed-by=/etc/apt/trusted.gpg.d/bunsen-release.asc] http://pkg.bunsenlabs.org/debian trixie-backports main
+EOF
+
+apt-get update -q
+
+# 3. Install BunsenLabs theme packages
+#   bunsen-themes  : GTK theme collection (includes bunsen-yaru-sage-dark etc.)
+#   bunsen-icons   : icon theme
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    bunsen-themes \
+    bunsen-icons

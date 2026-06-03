@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TeamOS Openbox right-click desktop menu -->
+<openbox_menu xmlns="http://openbox.org/3.1/menu">
+
+  <menu id="apps-internet" label="Internet">
+    <item label="Firefox">
+      <action name="Execute"><command>firefox-esr</command></action>
+    </item>
+  </menu>
+
+  <menu id="apps-office" label="Office">
+    <item label="Text Editor (Mousepad)">
+      <action name="Execute"><command>mousepad</command></action>
+    </item>
+    <item label="Calculator">
+      <action name="Execute"><command>galculator</command></action>
+    </item>
+  </menu>
+
+  <menu id="apps-graphics" label="Graphics">
+    <item label="Image Viewer (eog)">
+      <action name="Execute"><command>eog</command></action>
+    </item>
+  </menu>
+
+  <menu id="apps-system" label="System">
+    <item label="File Manager (Thunar)">
+      <action name="Execute"><command>thunar</command></action>
+    </item>
+    <item label="Volume Control">
+      <action name="Execute"><command>pavucontrol</command></action>
+    </item>
+    <item label="App Appearance (lxappearance)">
+      <action name="Execute"><command>lxappearance</command></action>
+    </item>
+    <item label="Openbox Config (obconf)">
+      <action name="Execute"><command>obconf</command></action>
+    </item>
+  </menu>
+
+  <menu id="apps-input" label="Input Method">
+    <item label="Fcitx5 Configuration">
+      <action name="Execute"><command>fcitx5-configtool</command></action>
+    </item>
+  </menu>
+
+  <menu id="root-menu" label="TeamOS">
+    <item label="Terminal (Alacritty)">
+      <action name="Execute"><command>alacritty</command></action>
+    </item>
+    <item label="App Launcher (rofi)">
+      <action name="Execute"><command>rofi -show drun</command></action>
+    </item>
+    <separator/>
+    <menu id="apps-internet"/>
+    <menu id="apps-office"/>
+    <menu id="apps-graphics"/>
+    <menu id="apps-system"/>
+    <menu id="apps-input"/>
+    <separator/>
+    <menu id="client-list-menu" label="Windows"/>
+    <separator/>
+    <menu id="openbox-menu" label="Openbox">
+      <item label="Reconfigure">
+        <action name="Reconfigure"/>
+      </item>
+      <item label="Restart">
+        <action name="Restart"/>
+      </item>
+      <separator/>
+      <item label="Exit">
+        <action name="Exit"/>
+      </item>
+    </menu>
+  </menu>
+
+</openbox_menu>

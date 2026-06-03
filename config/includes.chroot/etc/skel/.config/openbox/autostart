@@ -1,5 +1,28 @@
+## TeamOS Openbox autostart
+## Reference: https://github.com/BunsenLabs/bunsen-configs/blob/carbon/skel/.config/bunsen/autostart
+##
+## Note: programs under /etc/xdg/autostart/ are handled by XDG autostart
+## (nm-applet, polkit agent, etc.). This file is for session-specific startup.
+
+## Wallpaper (nitrogen --save to store a selection first)
 nitrogen --restore &
-tint2 &
+
+## Compositor (picom for transparency/shadows)
 picom &
+
+## Panel
+tint2 &
+
+## Notification daemon
 dunst &
-fcitx5 &
+
+## Clipboard manager
+clipcatd &
+
+## Input method
+fcitx5 -d &
+
+## Keyboard settings
+xset r rate 250 25
+xset b off
+

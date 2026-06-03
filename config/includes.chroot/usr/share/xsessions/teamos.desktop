@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=TeamOS
+Comment=Log in to a TeamOS session
+Exec=/usr/bin/teamos-session
+TryExec=/usr/bin/teamos-session
+Icon=teamos
+Type=Application
+DesktopNames=TeamOS;Openbox;

@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+export XDG_SESSION_DESKTOP=TeamOS
+export XDG_CURRENT_DESKTOP=TeamOS:Openbox
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export SDL_IM_MODULE=fcitx
+
+exec openbox-session
