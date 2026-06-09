@@ -1,0 +1,62 @@
+#!ipxe
+dhcp
+
+# 你的 NFS 服务器地址（OpenWrt 地址）
+set nfs-server 192.168.4.1
+set nfs-path /mnt/mmcblk0p10/pxe
+
+# 超时和默认启动项
+set menu-timeout 5000
+set menu-default teamos
+
+:start
+menu Please choose an operating system to boot
+item --gap --                   ------------------------- Systems --------------------------
+item --key z    zorin                   Zorin OS (NFS Boot / Install)
+item --key o    teamos                  TeamOS Live (NFS Boot)
+item --key t    thinstation             ThinStation 6.2
+item --gap --                   ------------------------- Advanced options -------------------------------
+item --key s    shell                   iPXE shell
+item --key r    reboot                  Reboot system
+item --key x    exit                    Exit iPXE
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto cancel
+set menu-timeout 0
+goto ${selected}
+
+:cancel
+echo Cancelled, booting default in 5s...
+sleep 5
+goto ${menu-default}
+
+:shell
+shell
+goto start
+
+:reboot
+reboot
+
+:exit
+exit
+
+# ========== Zorin OS 18 NFS 启动 ==========
+:zorin
+set zorin-nfs-root ${nfs-server}:${nfs-path}/zorin
+kernel nfs://${nfs-server}${nfs-path}/zorin/casper/vmlinuz initrd=initrd.zstd root=/dev/nfs boot=casper netboot=nfs nfsroot=${zorin-nfs-root} ip=dhcp ---
+initrd nfs://${nfs-server}${nfs-path}/zorin/casper/initrd.zstd
+boot
+goto start
+
+# ========== TeamOS Live NFS 启动 ==========
+:teamos
+set teamos-nfs-root ${nfs-server}:${nfs-path}/teamos
+kernel nfs://${nfs-server}${nfs-path}/teamos/live/vmlinuz initrd=initrd.img root=/dev/nfs boot=live components netboot=nfs nfsroot=${teamos-nfs-root} ip=dhcp username=user hostname=teamos ---
+initrd nfs://${nfs-server}${nfs-path}/teamos/live/initrd.img
+boot
+goto start
+
+# ========== 旧的 ThinStation ==========
+:thinstation
+kernel ${http-root}/vmlinuz
+initrd ${http-root}/initrd
+boot
+goto start

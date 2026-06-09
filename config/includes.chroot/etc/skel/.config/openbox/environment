@@ -1,0 +1,19 @@
+# TeamOS Openbox session environment
+
+if [ -d "/usr/share/themes/Manhattan" ]; then
+	export GTK_THEME="Manhattan"
+else
+	export GTK_THEME="Adwaita"
+fi
+
+if [ -d "/usr/share/icons/Vimix-Dark" ]; then
+	export XCURSOR_THEME="Vimix-Dark"
+else
+	export XCURSOR_THEME="Adwaita"
+fi
+export XCURSOR_SIZE="24"
+export XDG_CURRENT_DESKTOP="Openbox"
+
+# Keep Java UI and file picker consistent in lightweight sessions.
+export _JAVA_AWT_WM_NONREPARENTING=1
+export GTK_USE_PORTAL=0

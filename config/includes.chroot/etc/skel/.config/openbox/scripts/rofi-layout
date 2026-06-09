@@ -1,0 +1,134 @@
+#!/bin/sh
+
+set -eu
+
+menu="$HOME/.config/rofi/runner.rasi"
+current_layout="balanced"
+layout_file="$HOME/.config/openbox/themes/.current-layout"
+layouts_dir="$HOME/.config/openbox/themes/layouts"
+
+if [ -f "$layout_file" ]; then
+  current_layout="$(cat "$layout_file")"
+fi
+
+current_style="ember"
+if [ -f "$HOME/.config/openbox/themes/.current-style" ]; then
+  current_style="$(cat "$HOME/.config/openbox/themes/.current-style")"
+fi
+
+describe_layout() {
+  preset="$1"
+  layout_src="$layouts_dir/$preset.conf"
+
+  topbar_size="n/a"
+  dock_size="n/a"
+  dock_autohide="n/a"
+  margins="n/a"
+
+  if [ -f "$layout_src" ]; then
+    topbar_size="$(awk -F'"' '/^topbar_size=/{print $2; exit}' "$layout_src")"
+    dock_size="$(awk -F'"' '/^dock_size=/{print $2; exit}' "$layout_src")"
+    dock_autohide="$(awk -F'"' '/^dock_autohide=/{print $2; exit}' "$layout_src")"
+    margin_top="$(awk -F'"' '/^margin_top=/{print $2; exit}' "$layout_src")"
+    margin_bottom="$(awk -F'"' '/^margin_bottom=/{print $2; exit}' "$layout_src")"
+    margin_left="$(awk -F'"' '/^margin_left=/{print $2; exit}' "$layout_src")"
+    margin_right="$(awk -F'"' '/^margin_right=/{print $2; exit}' "$layout_src")"
+    if [ -n "$margin_top" ] && [ -n "$margin_bottom" ] && [ -n "$margin_left" ] && [ -n "$margin_right" ]; then
+      margins="${margin_top}/${margin_bottom}/${margin_left}/${margin_right}"
+    fi
+  fi
+
+  printf 'tb=%s dock=%s hide=%s mg=%s' "$topbar_size" "$dock_size" "$dock_autohide" "$margins"
+}
+
+layout_diff() {
+  from_preset="$1"
+  to_preset="$2"
+  from_src="$layouts_dir/$from_preset.conf"
+  to_src="$layouts_dir/$to_preset.conf"
+  changes=""
+
+  compare_field() {
+    field="$1"
+    label="$2"
+    from_value="$(awk -F'"' -v field="$field" '$0 ~ "^" field "=" {print $2; exit}' "$from_src")"
+    to_value="$(awk -F'"' -v field="$field" '$0 ~ "^" field "=" {print $2; exit}' "$to_src")"
+    if [ "$from_value" != "$to_value" ]; then
+      if [ -n "$changes" ]; then
+        changes="$changes | "
+      fi
+      changes="${changes}${label}:${from_value}->${to_value}"
+    fi
+  }
+
+  compare_field topbar_size tb
+  compare_field dock_size dock
+  compare_field dock_autohide hide
+  compare_field topbar_padding tpad
+  compare_field dock_padding dpad
+  compare_field dunst_offset toast
+
+  if [ -z "$changes" ]; then
+    changes="no geometry delta"
+  fi
+
+  printf '%s' "$changes"
+}
+
+original_layout="$current_layout"
+
+balanced_label="balanced :: centered / stable :: $(describe_layout balanced)"
+spacious_label="spacious :: wider gaps / larger dock :: $(describe_layout spacious)"
+compact_label="compact :: tighter frame / autohide dock :: $(describe_layout compact)"
+
+if [ "$current_layout" = 'balanced' ]; then
+  balanced_label="balanced :: centered / stable [current] :: $(describe_layout balanced)"
+elif [ "$current_layout" = 'spacious' ]; then
+  spacious_label="spacious :: wider gaps / larger dock [current] :: $(describe_layout spacious)"
+elif [ "$current_layout" = 'compact' ]; then
+  compact_label="compact :: tighter frame / autohide dock [current] :: $(describe_layout compact)"
+fi
+
+choice="$({
+  printf '%s\n' "Current Layout: ${current_layout}"
+  printf '%s\n' "$balanced_label"
+  printf '%s\n' "$spacious_label"
+  printf '%s\n' "$compact_label"
+} | rofi -dmenu -i -p 'TeamOS Layout' -theme "$menu")"
+
+[ -z "$choice" ] && exit 0
+
+case "$choice" in
+  'Current Layout: '*)
+    exit 0
+    ;;
+esac
+
+layout_preset="$(printf '%s' "$choice" | awk '{print $1}')"
+
+[ "$layout_preset" = "$current_layout" ] && exit 0
+
+"$HOME/.config/openbox/scripts/theme-apply" --auto "$layout_preset" --quiet
+
+confirm_choice="$({
+  printf '%s\n' "Previewing Layout: ${layout_preset}"
+  printf '%s\n' "Geometry: $(describe_layout "$layout_preset")"
+  printf '%s\n' "Delta: $(layout_diff "$original_layout" "$layout_preset")"
+  printf '%s\n' "Style: ${current_style}"
+  printf '%s\n' 'Apply Layout'
+  printf '%s\n' 'Revert Preview'
+} | rofi -dmenu -i -p 'Layout Preview' -theme "$menu")"
+
+case "$confirm_choice" in
+  'Apply Layout')
+    exit 0
+    ;;
+  'Previewing Layout: '*|'Geometry: '*|'Delta: '*|'Style: '*)
+    "$HOME/.config/openbox/scripts/theme-apply" --auto "$original_layout" --quiet
+    exit 0
+    ;;
+  *)
+    "$HOME/.config/openbox/scripts/theme-apply" --auto "$original_layout" --quiet
+    exit 0
+    ;;
+esac

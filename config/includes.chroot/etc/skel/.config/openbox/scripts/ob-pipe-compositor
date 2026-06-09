@@ -1,0 +1,9 @@
+#!/bin/sh
+
+printf '%s\n' '<openbox_pipe_menu>'
+printf '%s\n' '  <item label="Compositor: Restart"><action name="Execute"><command>sh -c "pkill -x picom 2>/dev/null; picom &amp;"</command></action></item>'
+printf '%s\n' '  <item label="Compositor: Stop"><action name="Execute"><command>pkill -x picom</command></action></item>'
+printf '%s\n' '  <item label="Compositor: Start"><action name="Execute"><command>picom</command></action></item>'
+printf '%s\n' '  <separator/>'
+printf '%s\n' '  <item label="Edit picom.conf"><action name="Execute"><command>mousepad $HOME/.config/picom.conf</command></action></item>'
+printf '%s\n' '</openbox_pipe_menu>'

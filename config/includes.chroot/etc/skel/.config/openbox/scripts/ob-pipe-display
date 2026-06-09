@@ -1,0 +1,18 @@
+#!/bin/sh
+
+printf '%s\n' '<openbox_pipe_menu>'
+printf '%s\n' '  <item label="Display Layout (ARandR)"><action name="Execute"><command>arandr</command></action></item>'
+printf '%s\n' '  <item label="Auto Detect Displays"><action name="Execute"><command>xrandr --auto</command></action></item>'
+
+if command -v xrandr >/dev/null 2>&1; then
+  outputs="$(xrandr --query 2>/dev/null | awk '/ connected/{print $1}')"
+  if [ -n "$outputs" ]; then
+    printf '%s\n' '  <separator/>'
+    for out in $outputs; do
+      printf '%s\n' "  <item label=\"Enable $out\"><action name=\"Execute\"><command>xrandr --output $out --auto</command></action></item>"
+      printf '%s\n' "  <item label=\"Disable $out\"><action name=\"Execute\"><command>xrandr --output $out --off</command></action></item>"
+    done
+  fi
+fi
+
+printf '%s\n' '</openbox_pipe_menu>'

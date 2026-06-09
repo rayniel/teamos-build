@@ -1,0 +1,92 @@
+* {
+  bg: #111315ee;
+  bg-alt: #1a1d21ee;
+  surface: #21262cee;
+  fg: #f5efe4;
+  fg-dim: #b2aba0;
+  accent: #d48a3a;
+  accent-strong: #b36d22;
+  urgent: #cf5c36;
+  border: #394149;
+  selected: #2b3138;
+
+  background-color: transparent;
+  text-color: @fg;
+  font: "Source Sans 3 11";
+}
+
+window {
+  border: 2px;
+  border-radius: 14px;
+  border-color: @border;
+  background-color: @bg;
+}
+
+mainbox {
+  spacing: 12px;
+  padding: 14px;
+  background-color: transparent;
+}
+
+inputbar {
+  spacing: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background-color: @bg-alt;
+}
+
+entry {
+  placeholder-color: @fg-dim;
+}
+
+listview {
+  cycle: true;
+  dynamic: true;
+  scrollbar: false;
+  spacing: 6px;
+  background-color: transparent;
+}
+
+element {
+  padding: 10px;
+  border-radius: 10px;
+  background-color: transparent;
+}
+
+element normal.normal {
+  text-color: @fg;
+}
+
+element selected.normal {
+  background-color: @selected;
+  border: 1px;
+  border-color: @accent;
+  text-color: @fg;
+}
+
+element-icon {
+  size: 1.1em;
+  vertical-align: 0.5;
+}
+
+element-text {
+  vertical-align: 0.5;
+}
+
+message {
+  enabled: true;
+  background-color: transparent;
+  text-color: @fg-dim;
+}
+
+button {
+  padding: 7px 12px;
+  border-radius: 9px;
+  background-color: @bg-alt;
+  text-color: @fg;
+}
+
+button selected {
+  background-color: @accent;
+  text-color: #0f1113;
+}

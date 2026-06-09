@@ -1,0 +1,20 @@
+configuration {
+  modi: "drun,run,window";
+  show-icons: true;
+  drun-display-format: "{name}";
+  terminal: "alacritty";
+  icon-theme: "hicolor";
+  location: 1;
+  anchor: 1;
+  xoffset: 10;
+  yoffset: 44;
+  disable-history: false;
+  hover-select: true;
+  matching: "fuzzy";
+  me-select-entry: "MousePrimary";
+  me-accept-entry: "MouseDPrimary";
+  kb-mode-next: "Control+Tab";
+  kb-mode-previous: "Control+Shift+Tab";
+}
+
+@theme "launcher"

@@ -4,6 +4,17 @@
 ## Note: programs under /etc/xdg/autostart/ are handled by XDG autostart
 ## (nm-applet, polkit agent, etc.). This file is for session-specific startup.
 
+## Session environment
+if [ -f "$HOME/.config/openbox/environment" ]; then
+	# shellcheck disable=SC1090
+	. "$HOME/.config/openbox/environment"
+fi
+
+## Apply persisted desktop style before starting UI components
+if [ -x "$HOME/.config/openbox/scripts/theme-apply" ]; then
+	"$HOME/.config/openbox/scripts/theme-apply" --auto --quiet
+fi
+
 ## Wallpaper (nitrogen --save to store a selection first)
 nitrogen --restore &
 
@@ -11,7 +22,9 @@ nitrogen --restore &
 picom &
 
 ## Panel
-tint2 &
+pkill -x tint2 2>/dev/null || true
+tint2 -c "$HOME/.config/tint2/tint2rc" &
+tint2 -c "$HOME/.config/tint2/tint2-dockrc" &
 
 ## Notification daemon
 dunst &

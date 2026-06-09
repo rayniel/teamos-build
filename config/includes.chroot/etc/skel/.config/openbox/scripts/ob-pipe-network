@@ -1,0 +1,30 @@
+#!/bin/sh
+
+wifi_state="unknown"
+if command -v nmcli >/dev/null 2>&1; then
+  wifi_state="$(nmcli -t -f WIFI g 2>/dev/null | head -n1)"
+fi
+
+printf '%s\n' '<openbox_pipe_menu>'
+printf '%s\n' '  <item label="Network Connections"><action name="Execute"><command>nm-connection-editor</command></action></item>'
+printf '%s\n' '  <item label="Text UI Network (nmtui)"><action name="Execute"><command>alacritty -e nmtui</command></action></item>'
+printf '%s\n' '  <separator/>'
+
+case "$wifi_state" in
+  enabled)
+    printf '%s\n' '  <item label="Wi-Fi: Turn Off"><action name="Execute"><command>nmcli radio wifi off</command></action></item>'
+    ;;
+  disabled)
+    printf '%s\n' '  <item label="Wi-Fi: Turn On"><action name="Execute"><command>nmcli radio wifi on</command></action></item>'
+    ;;
+  *)
+    printf '%s\n' '  <item label="Wi-Fi status unavailable"><action name="Execute"><command>true</command></action></item>'
+    ;;
+esac
+
+if command -v nmcli >/dev/null 2>&1; then
+  printf '%s\n' '  <separator/>'
+  printf '%s\n' '  <item label="Show Active Connections"><action name="Execute"><command>alacritty -e sh -c "nmcli connection show --active; echo; read -r -p PressEnter _"</command></action></item>'
+fi
+
+printf '%s\n' '</openbox_pipe_menu>'

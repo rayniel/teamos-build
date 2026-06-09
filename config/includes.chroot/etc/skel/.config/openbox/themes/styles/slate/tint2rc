@@ -1,0 +1,68 @@
+# TeamOS top taskbar (Windows-like workflow with a start launcher)
+
+#---- Generated for TeamOS ----
+panel_items = LTSC
+panel_size = 98% 44
+panel_margin = 12 10
+panel_padding = 12 8 12
+panel_background_id = 1
+wm_menu = 1
+
+panel_position = top center horizontal
+panel_layer = top
+panel_monitor = all
+panel_shrink = 1
+strut_policy = follow_size
+panel_window_name = tint2
+
+taskbar_mode = single_desktop
+taskbar_hide_if_empty = 0
+taskbar_padding = 6 0 6
+taskbar_background_id = 2
+taskbar_active_background_id = 3
+
+time1_format = %H:%M
+time2_format = %Y-%m-%d
+time1_padding = 6 0
+time2_padding = 6 0
+clock_font_color = #e8f0f7 100
+clock_tooltip = %A %B %d
+clock_background_id = 2
+
+launcher_padding = 10 4 10
+launcher_background_id = 2
+launcher_icon_theme = hicolor
+
+launcher_item_app = /usr/share/applications/rofi.desktop
+
+mouse_middle = none
+mouse_right = close
+mouse_scroll_up = toggle
+mouse_scroll_down = iconify
+
+urgent_nb_of_blink = 6
+
+rounded = 12
+border_width = 1
+border_sides = TBLR
+
+background_color = #0e141a 94
+border_color = #2f4b63 100
+
+rounded = 10
+border_width = 1
+border_sides = TBLR
+background_color = #17222b 86
+border_color = #253a4c 100
+
+rounded = 10
+border_width = 1
+border_sides = TBLR
+background_color = #1f2d38 96
+border_color = #2f4b63 100
+
+rounded = 10
+border_width = 1
+border_sides = TBLR
+background_color = #5ea0ef 96
+border_color = #3d82d6 100

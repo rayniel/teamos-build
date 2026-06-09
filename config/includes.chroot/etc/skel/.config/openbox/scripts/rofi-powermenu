@@ -1,0 +1,22 @@
+#!/bin/sh
+
+choice="$(printf '%s\n' 'Lock' 'Logout' 'Reboot' 'Shutdown' 'Cancel' | \
+  rofi -dmenu -i -p 'Session' -theme "$HOME/.config/rofi/powermenu.rasi")"
+
+case "$choice" in
+  Lock)
+    exec xdg-screensaver lock
+    ;;
+  Logout)
+    exec openbox --exit
+    ;;
+  Reboot)
+    exec pkexec systemctl reboot
+    ;;
+  Shutdown)
+    exec pkexec systemctl poweroff
+    ;;
+  *)
+    exit 0
+    ;;
+esac

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+level="unknown"
+if command -v brightnessctl >/dev/null 2>&1; then
+  level="$(brightnessctl -m | awk -F',' '{print $4}')"
+elif command -v xbacklight >/dev/null 2>&1; then
+  level="$(xbacklight -get | awk '{printf("%.0f%%", $1)}')"
+fi
+
+printf '%s\n' '<openbox_pipe_menu>'
+printf '%s\n' '  <item label="Brightness +5%"><action name="Execute"><command>$HOME/.config/openbox/scripts/teamos-brightnessctl up 5</command></action></item>'
+printf '%s\n' '  <item label="Brightness -5%"><action name="Execute"><command>$HOME/.config/openbox/scripts/teamos-brightnessctl down 5</command></action></item>'
+printf '%s\n' '  <separator/>'
+printf '%s\n' "  <item label=\"Current Brightness: $level\"><action name=\"Execute\"><command>true</command></action></item>"
+printf '%s\n' '</openbox_pipe_menu>'

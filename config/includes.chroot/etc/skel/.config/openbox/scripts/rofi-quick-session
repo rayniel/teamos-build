@@ -1,0 +1,37 @@
+#!/bin/sh
+
+set -eu
+
+menu="$HOME/.config/rofi/runner.rasi"
+
+choice="$({
+  printf '%s\n' 'Lock Screen'
+  printf '%s\n' 'Logout Session'
+  printf '%s\n' 'Reconfigure Openbox'
+  printf '%s\n' 'Restart Openbox'
+  printf '%s\n' 'Open Power Menu'
+  printf '%s\n' 'Back'
+} | rofi -dmenu -i -p 'Session Center' -theme "$menu")"
+
+[ -z "$choice" ] && exit 0
+
+case "$choice" in
+  'Lock Screen')
+    exec xdg-screensaver lock
+    ;;
+  'Logout Session')
+    exec openbox --exit
+    ;;
+  'Reconfigure Openbox')
+    exec openbox --reconfigure
+    ;;
+  'Restart Openbox')
+    exec openbox --restart
+    ;;
+  'Open Power Menu')
+    exec "$HOME/.config/openbox/scripts/rofi-powermenu"
+    ;;
+  *)
+    exec "$HOME/.config/openbox/scripts/rofi-quick-settings"
+    ;;
+esac

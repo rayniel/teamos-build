@@ -1,0 +1,34 @@
+#!/bin/sh
+set -e
+
+echo "[teamos hook] Installing rime-ice into /usr/share/rime-data..."
+DEBIAN_FRONTEND=noninteractive apt-get install -y git ca-certificates rsync
+
+tmpdir="$(mktemp -d)"
+cleanup() {
+    rm -rf "$tmpdir"
+}
+trap cleanup EXIT INT TERM
+
+git clone --depth 1 https://github.com/iDvel/rime-ice.git "$tmpdir/rime-ice"
+
+mkdir -p /usr/share/rime-data
+
+rsync -a \
+    --exclude '.git/' \
+    --exclude '.github/' \
+    --exclude 'build/' \
+    --exclude 'others/' \
+    --exclude 'AGENTS.md' \
+    --exclude 'README.md' \
+    --exclude 'LICENSE' \
+    --exclude 'go.mod' \
+    --exclude 'go.sum' \
+    --exclude 'go.work' \
+    --exclude 'go.work.sum' \
+    --exclude 'recipe.yaml' \
+    --exclude 'squirrel.yaml' \
+    --exclude 'weasel.yaml' \
+    "$tmpdir/rime-ice/" /usr/share/rime-data/
+
+echo "[teamos hook] Installed rime-ice files into /usr/share/rime-data/."

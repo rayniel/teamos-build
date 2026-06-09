@@ -1,32 +1,67 @@
 #!/bin/sh
-# Install BunsenLabs themes (GTK + icons) from the official BunsenLabs apt repository.
-# This hook runs in the chroot during live-build, after main packages are installed.
-#
-# Key source:
-#   https://github.com/BunsenLabs/bunsen-netinstall/blob/carbon/sysfiles1/etc/apt/trusted.gpg.d/bunsen-release.asc
-# Repository:
-#   http://pkg.bunsenlabs.org/debian trixie-backports main
-#   (Carbon = BunsenLabs release tracking Debian trixie)
+# Install themes from GitHub only.
+# No third-party apt repository is added in this hook.
 
 set -e
 
-echo "[teamos hook] Setting up BunsenLabs apt repository..."
+echo "[teamos hook] Installing theme assets from GitHub (no BunsenLabs apt source)..."
+DEBIAN_FRONTEND=noninteractive apt-get install -y git ca-certificates
 
-# 1. Install signing key from the official BunsenLabs netinstall repo
-mkdir -p /etc/apt/trusted.gpg.d
-wget -qO /etc/apt/trusted.gpg.d/bunsen-release.asc \
-    "https://raw.githubusercontent.com/BunsenLabs/bunsen-netinstall/carbon/sysfiles1/etc/apt/trusted.gpg.d/bunsen-release.asc"
+tmpdir="$(mktemp -d)"
+cleanup() {
+    rm -rf "$tmpdir"
+}
+trap cleanup EXIT INT TERM
 
-# 2. Add apt source (signed-by references the key above)
-cat > /etc/apt/sources.list.d/bunsenlabs.list << 'EOF'
-deb [signed-by=/etc/apt/trusted.gpg.d/bunsen-release.asc] http://pkg.bunsenlabs.org/debian trixie-backports main
+git clone --depth 1 https://github.com/BunsenLabs/bunsen-themes.git "$tmpdir/bunsen-themes"
+
+mkdir -p /usr/share/themes
+if [ -d "$tmpdir/bunsen-themes/themes" ]; then
+    cp -a "$tmpdir/bunsen-themes/themes/." /usr/share/themes/
+fi
+if [ -d "$tmpdir/bunsen-themes/themes-extra" ]; then
+    cp -a "$tmpdir/bunsen-themes/themes-extra/." /usr/share/themes/
+fi
+
+echo "[teamos hook] Installed Bunsen themes from GitHub source."
+echo "[teamos hook] Icon themes remain distro defaults (no BunsenLabs apt repo used)."
+
+# Optional: install extra Openbox themes from Archcraft GitHub repository.
+install_archcraft_themes="${TEAMOS_INSTALL_ARCHCRAFT_THEMES:-1}"
+default_openbox_theme="${TEAMOS_DEFAULT_OPENBOX_THEME:-OB-Manhattan}"
+if [ "$install_archcraft_themes" = "1" ]; then
+    echo "[teamos hook] Installing Archcraft Openbox themes from GitHub..."
+    arch_tmpdir="$(mktemp -d)"
+    arch_cleanup() {
+        rm -rf "$arch_tmpdir"
+    }
+    trap 'arch_cleanup; cleanup' EXIT INT TERM
+
+    git clone --depth 1 https://github.com/archcraft-os/archcraft-openbox-themes.git \
+        "$arch_tmpdir/archcraft-openbox-themes"
+
+    mkdir -p /usr/share/themes
+    copied_count=0
+    while IFS= read -r theme_dir; do
+        cp -a "$theme_dir" /usr/share/themes/
+        copied_count=$((copied_count + 1))
+    done <<EOF
+$(find "$arch_tmpdir/archcraft-openbox-themes" -mindepth 1 -maxdepth 1 -type d -name 'OB-*' -exec sh -c 'for p; do [ -d "$p/openbox-3" ] && printf "%s\n" "$p"; done' sh {} +)
 EOF
 
-apt-get update -q
+    echo "[teamos hook] Installed $copied_count Archcraft Openbox themes into /usr/share/themes/."
+    if [ "$copied_count" -eq 0 ]; then
+        echo "[teamos hook] ERROR: no Archcraft Openbox theme was copied."
+        exit 1
+    fi
 
-# 3. Install BunsenLabs theme packages
-#   bunsen-themes  : GTK theme collection (includes bunsen-yaru-sage-dark etc.)
-#   bunsen-icons   : icon theme
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    bunsen-themes \
-    bunsen-icons
+    if [ ! -d "/usr/share/themes/$default_openbox_theme/openbox-3" ]; then
+        echo "[teamos hook] ERROR: expected default Openbox theme '$default_openbox_theme' not found."
+        echo "[teamos hook] Available installed OB themes:"
+        find /usr/share/themes -mindepth 1 -maxdepth 1 -type d -name 'OB-*' -printf '  - %f\n' || true
+        exit 1
+    fi
+    echo "[teamos hook] Verified default Openbox theme: $default_openbox_theme"
+else
+    echo "[teamos hook] Skipping Archcraft Openbox themes (TEAMOS_INSTALL_ARCHCRAFT_THEMES=$install_archcraft_themes)."
+fi

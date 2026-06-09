@@ -6,7 +6,7 @@ decorations = "full"
 size = 10.0
 
 [font.normal]
-family = "Monospace"
+family = "JetBrains Mono"
 
 [scrolling]
 history = 10000

@@ -6,11 +6,10 @@ xserver-xorg-input-libinput
 xserver-xorg-video-all
 lightdm
 lightdm-gtk-greeter
-policykit-1
+polkitd
+pkexec
 openbox
 obconf
-obmenu
-openbox-themes
 menu
 menu-xdg
 tint2
@@ -19,14 +18,12 @@ picom
 lxappearance
 rofi
 dunst
-clipcatd
-thunar
-thunar-archive-plugin
-thunar-volman
+pcmanfm
 gvfs
 gvfs-backends
 alacritty
 file-roller
+scrot
 p7zip-full
 unzip
 zip
@@ -35,6 +32,8 @@ eog
 mousepad
 galculator
 pavucontrol
+arandr
+network-manager-gnome
 
 # Fonts: Chinese, Google, Source Han-style coverage, and programming fonts
 fonts-noto-core
@@ -54,7 +53,9 @@ fonts-hack
 fonts-mononoki
 
 pulseaudio
+pulseaudio-utils
 alsa-utils
+brightnessctl
 fcitx5
 fcitx5-chinese-addons
 fcitx5-frontend-all
@@ -64,4 +65,4 @@ rime-essay
 rime-data-luna-pinyin
 rime-data-pinyin-simp
 rime-data-emoji
-fcitx5-configtool
+fcitx5-config-qt

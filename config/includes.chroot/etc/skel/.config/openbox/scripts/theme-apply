@@ -1,0 +1,275 @@
+#!/bin/sh
+
+set -eu
+
+styles_dir="$HOME/.config/openbox/themes/styles"
+current_file="$HOME/.config/openbox/themes/.current-style"
+layouts_dir="$HOME/.config/openbox/themes/layouts"
+current_layout_file="$HOME/.config/openbox/themes/.current-layout"
+
+quiet=0
+mode="manual"
+style=""
+layout_preset=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --auto)
+      mode="auto"
+      ;;
+    --quiet)
+      quiet=1
+      ;;
+    ember|slate|forest|forest-vivid)
+      style="$arg"
+      ;;
+    balanced|spacious|compact)
+      layout_preset="$arg"
+      ;;
+    *)
+      ;;
+  esac
+done
+
+if [ "$mode" = "auto" ]; then
+  if [ -f "$current_file" ]; then
+    style="$(cat "$current_file")"
+  else
+    style="ember"
+  fi
+fi
+
+if [ -z "$layout_preset" ]; then
+  if [ -f "$current_layout_file" ]; then
+    layout_preset="$(cat "$current_layout_file")"
+  else
+    layout_preset="balanced"
+  fi
+fi
+
+if [ -z "$style" ]; then
+  echo "Usage: theme-apply [ember|slate|forest|forest-vivid] [balanced|spacious|compact] [--quiet] [--auto]" >&2
+  exit 1
+fi
+
+src="$styles_dir/$style"
+[ -d "$src" ] || {
+  echo "theme-apply: missing style '$style'" >&2
+  exit 1
+}
+
+layout_src="$layouts_dir/$layout_preset.conf"
+[ -f "$layout_src" ] || {
+  echo "theme-apply: missing layout preset '$layout_preset'" >&2
+  exit 1
+}
+
+apply_xml_tag() {
+  file="$1"
+  block_start="$2"
+  block_end="$3"
+  tag="$4"
+  value="$5"
+
+  tmp_file="$(mktemp)"
+  awk -v block_start="$block_start" -v block_end="$block_end" -v tag="$tag" -v value="$value" '
+    {
+      if (index($0, block_start) > 0) {
+        in_block = 1
+      }
+
+      if (in_block && !done && $0 ~ "^[[:space:]]*<" tag ">[^<]*</" tag ">[[:space:]]*$") {
+        match($0, /^[[:space:]]*/)
+        indent = substr($0, RSTART, RLENGTH)
+        print indent "<" tag ">" value "</" tag ">"
+        done = 1
+      } else {
+        print
+      }
+
+      if (index($0, block_end) > 0) {
+        in_block = 0
+      }
+    }
+  ' "$file" > "$tmp_file"
+  mv "$tmp_file" "$file"
+}
+
+set_ini_value() {
+  file="$1"
+  key="$2"
+  value="$3"
+
+  if grep -q "^${key}=" "$file"; then
+    sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+  else
+    printf '%s=%s\n' "$key" "$value" >> "$file"
+  fi
+}
+
+set_env_export() {
+  file="$1"
+  name="$2"
+  value="$3"
+
+  if grep -q "^export ${name}=" "$file"; then
+    sed -i "s|^export ${name}=.*|export ${name}=\"${value}\"|" "$file"
+  else
+    printf 'export %s="%s"\n' "$name" "$value" >> "$file"
+  fi
+}
+
+set_config_value() {
+  file="$1"
+  key="$2"
+  value="$3"
+
+  if grep -q "^${key} =" "$file"; then
+    sed -i "s|^${key} =.*|${key} = ${value}|" "$file"
+  else
+    printf '%s = %s\n' "$key" "$value" >> "$file"
+  fi
+}
+
+set_rasi_value() {
+  file="$1"
+  block="$2"
+  key="$3"
+  value="$4"
+
+  tmp_file="$(mktemp)"
+  awk -v block="$block" -v key="$key" -v value="$value" '
+    {
+      if ($0 ~ "^[[:space:]]*" block "[[:space:]]*\\{") {
+        in_block = 1
+      }
+
+      if (in_block && !done && $0 ~ "^[[:space:]]*" key ":[[:space:]]*.*;") {
+        match($0, /^[[:space:]]*/)
+        indent = substr($0, RSTART, RLENGTH)
+        print indent key ": " value ";"
+        done = 1
+      } else {
+        print
+      }
+
+      if (in_block && $0 ~ /^[[:space:]]*}/) {
+        in_block = 0
+      }
+    }
+  ' "$file" > "$tmp_file"
+  mv "$tmp_file" "$file"
+}
+
+cp "$src/rofi-shared-theme.rasi" "$HOME/.config/rofi/shared-theme.rasi"
+cp "$src/dunstrc" "$HOME/.config/dunst/dunstrc"
+cp "$src/tint2rc" "$HOME/.config/tint2/tint2rc"
+cp "$src/tint2-dockrc" "$HOME/.config/tint2/tint2-dockrc"
+
+ob_theme="OB-Manhattan"
+ob_title_layout="LIMC"
+margin_top="56"
+margin_bottom="76"
+margin_left="12"
+margin_right="12"
+gtk_theme="Manhattan"
+cursor_theme="Vimix-Dark"
+topbar_size="98% 44"
+topbar_margin="12 10"
+topbar_padding="12 8 12"
+topbar_launcher_padding="10 4 10"
+topbar_taskbar_padding="6 0 6"
+dock_size="48% 58"
+dock_margin="0 18"
+dock_autohide="0"
+dock_padding="14 9 14"
+dock_launcher_padding="12 6 12"
+rofi_main_spacing="12"
+rofi_main_padding="14"
+rofi_input_padding="12"
+rofi_list_spacing="6"
+rofi_element_padding="10"
+dunst_width="320"
+dunst_height="96"
+dunst_offset="18x56"
+dunst_padding="12"
+dunst_horizontal_padding="12"
+dunst_gap_size="8"
+
+if [ -f "$src/style.conf" ]; then
+  # shellcheck disable=SC1090
+  . "$src/style.conf"
+fi
+
+# shellcheck disable=SC1090
+. "$layout_src"
+
+if [ -f "$src/picom.conf" ]; then
+  cp "$src/picom.conf" "$HOME/.config/picom.conf"
+fi
+
+openbox_rc="$HOME/.config/openbox/rc.xml"
+apply_xml_tag "$openbox_rc" "<theme>" "</theme>" "name" "$ob_theme"
+apply_xml_tag "$openbox_rc" "<theme>" "</theme>" "titleLayout" "$ob_title_layout"
+apply_xml_tag "$openbox_rc" "<margins>" "</margins>" "top" "$margin_top"
+apply_xml_tag "$openbox_rc" "<margins>" "</margins>" "bottom" "$margin_bottom"
+apply_xml_tag "$openbox_rc" "<margins>" "</margins>" "left" "$margin_left"
+apply_xml_tag "$openbox_rc" "<margins>" "</margins>" "right" "$margin_right"
+
+gtk3="$HOME/.config/gtk-3.0/settings.ini"
+gtk4="$HOME/.config/gtk-4.0/settings.ini"
+set_ini_value "$gtk3" "gtk-theme-name" "$gtk_theme"
+set_ini_value "$gtk3" "gtk-cursor-theme-name" "$cursor_theme"
+set_ini_value "$gtk4" "gtk-theme-name" "$gtk_theme"
+set_ini_value "$gtk4" "gtk-cursor-theme-name" "$cursor_theme"
+
+set_env_export "$HOME/.config/openbox/environment" "GTK_THEME" "$gtk_theme"
+set_env_export "$HOME/.config/openbox/environment" "XCURSOR_THEME" "$cursor_theme"
+
+set_config_value "$HOME/.config/tint2/tint2rc" "panel_size" "$topbar_size"
+set_config_value "$HOME/.config/tint2/tint2rc" "panel_margin" "$topbar_margin"
+set_config_value "$HOME/.config/tint2/tint2rc" "panel_padding" "$topbar_padding"
+set_config_value "$HOME/.config/tint2/tint2rc" "launcher_padding" "$topbar_launcher_padding"
+set_config_value "$HOME/.config/tint2/tint2rc" "taskbar_padding" "$topbar_taskbar_padding"
+set_config_value "$HOME/.config/tint2/tint2-dockrc" "panel_size" "$dock_size"
+set_config_value "$HOME/.config/tint2/tint2-dockrc" "panel_margin" "$dock_margin"
+set_config_value "$HOME/.config/tint2/tint2-dockrc" "autohide" "$dock_autohide"
+set_config_value "$HOME/.config/tint2/tint2-dockrc" "panel_padding" "$dock_padding"
+set_config_value "$HOME/.config/tint2/tint2-dockrc" "launcher_padding" "$dock_launcher_padding"
+
+rofi_shared="$HOME/.config/rofi/shared-theme.rasi"
+set_rasi_value "$rofi_shared" "mainbox" "spacing" "$rofi_main_spacing"
+set_rasi_value "$rofi_shared" "mainbox" "padding" "$rofi_main_padding"
+set_rasi_value "$rofi_shared" "inputbar" "padding" "$rofi_input_padding"
+set_rasi_value "$rofi_shared" "listview" "spacing" "$rofi_list_spacing"
+set_rasi_value "$rofi_shared" "element" "padding" "$rofi_element_padding"
+
+dunst_conf="$HOME/.config/dunst/dunstrc"
+set_config_value "$dunst_conf" "width" "$dunst_width"
+set_config_value "$dunst_conf" "height" "$dunst_height"
+set_config_value "$dunst_conf" "offset" "$dunst_offset"
+set_config_value "$dunst_conf" "padding" "$dunst_padding"
+set_config_value "$dunst_conf" "horizontal_padding" "$dunst_horizontal_padding"
+set_config_value "$dunst_conf" "gap_size" "$dunst_gap_size"
+
+mkdir -p "$(dirname "$current_file")"
+printf '%s\n' "$style" > "$current_file"
+printf '%s\n' "$layout_preset" > "$current_layout_file"
+
+if [ "$quiet" -ne 1 ]; then
+  dunstify -u low -h string:x-dunst-stack-tag:teamos-style "Style applied" "$style / $layout_preset" 2>/dev/null || true
+fi
+
+if [ "$mode" = "manual" ]; then
+  pkill -x dunst 2>/dev/null || true
+  dunst &
+
+  pkill -x tint2 2>/dev/null || true
+  tint2 -c "$HOME/.config/tint2/tint2rc" &
+  tint2 -c "$HOME/.config/tint2/tint2-dockrc" &
+
+  pkill -x picom 2>/dev/null || true
+  picom &
+fi
+
+openbox --reconfigure 2>/dev/null || true

@@ -1,0 +1,3 @@
+#!/bin/sh
+exec rofi -show run -run-prompt 'Run > ' \
+  -theme "$HOME/.config/rofi/runner.rasi"

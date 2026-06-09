@@ -1,0 +1,31 @@
+#!/bin/sh
+
+mute_state="unknown"
+volume_value="n/a"
+
+if command -v pactl >/dev/null 2>&1; then
+  raw_mute="$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')"
+  case "$raw_mute" in
+    yes|on|true|1|是)
+      mute_state="yes"
+      ;;
+    no|off|false|0|否)
+      mute_state="no"
+      ;;
+    *)
+      mute_state="unknown"
+      ;;
+  esac
+  volume_value="$(pactl get-sink-volume @DEFAULT_SINK@ | awk 'NR==1{print $5}')"
+fi
+
+printf '%s\n' '<openbox_pipe_menu>'
+printf '%s\n' '  <item label="Open Volume Mixer"><action name="Execute"><command>pavucontrol</command></action></item>'
+printf '%s\n' '  <separator/>'
+printf '%s\n' '  <item label="Volume +5%"><action name="Execute"><command>$HOME/.config/openbox/scripts/teamos-volumectl up 5</command></action></item>'
+printf '%s\n' '  <item label="Volume -5%"><action name="Execute"><command>$HOME/.config/openbox/scripts/teamos-volumectl down 5</command></action></item>'
+printf '%s\n' '  <item label="Toggle Mute"><action name="Execute"><command>$HOME/.config/openbox/scripts/teamos-volumectl mute</command></action></item>'
+printf '%s\n' '  <separator/>'
+printf '%s\n' "  <item label=\"Current Volume: $volume_value\"><action name=\"Execute\"><command>true</command></action></item>"
+printf '%s\n' "  <item label=\"Muted: $mute_state\"><action name=\"Execute\"><command>true</command></action></item>"
+printf '%s\n' '</openbox_pipe_menu>'

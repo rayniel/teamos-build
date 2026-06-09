@@ -2,6 +2,12 @@
 <!-- TeamOS Openbox right-click desktop menu -->
 <openbox_menu xmlns="http://openbox.org/3.1/menu">
 
+  <menu id="pipe-display" label="Display" execute="teamos-ob-pipe-display"/>
+  <menu id="pipe-network" label="Network" execute="teamos-ob-pipe-network"/>
+  <menu id="pipe-compositor" label="Compositor" execute="teamos-ob-pipe-compositor"/>
+  <menu id="pipe-audio" label="Audio" execute="teamos-ob-pipe-audio"/>
+  <menu id="pipe-brightness" label="Brightness" execute="teamos-ob-pipe-brightness"/>
+
   <menu id="apps-internet" label="Internet">
     <item label="Firefox">
       <action name="Execute"><command>firefox-esr</command></action>
@@ -24,11 +30,40 @@
   </menu>
 
   <menu id="apps-system" label="System">
-    <item label="File Manager (Thunar)">
-      <action name="Execute"><command>thunar</command></action>
+    <item label="File Manager (PCManFM)">
+      <action name="Execute"><command>pcmanfm</command></action>
+    </item>
+    <item label="Clipboard History">
+      <action name="Execute"><command>clipcat-menu --finder=rofi</command></action>
+    </item>
+    <item label="Control Center">
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/rofi-quick-settings</command></action>
     </item>
     <item label="Volume Control">
       <action name="Execute"><command>pavucontrol</command></action>
+    </item>
+    <menu id="pipe-audio"/>
+    <menu id="pipe-brightness"/>
+    <item label="Network Connections">
+      <action name="Execute"><command>nm-connection-editor</command></action>
+    </item>
+    <item label="Display Layout (ARandR)">
+      <action name="Execute"><command>arandr</command></action>
+    </item>
+    <menu id="pipe-display"/>
+    <menu id="pipe-network"/>
+    <menu id="pipe-compositor"/>
+    <item label="Wallpaper (Nitrogen)">
+      <action name="Execute"><command>nitrogen</command></action>
+    </item>
+    <item label="Power Menu">
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/rofi-powermenu</command></action>
+    </item>
+    <item label="Take Screenshot">
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/screenshot-full</command></action>
+    </item>
+    <item label="Theme Style">
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/rofi-style</command></action>
     </item>
     <item label="App Appearance (lxappearance)">
       <action name="Execute"><command>lxappearance</command></action>
@@ -44,12 +79,37 @@
     </item>
   </menu>
 
+  <menu id="session-menu" label="Session">
+    <item label="Lock Screen">
+      <action name="Execute"><command>xdg-screensaver lock</command></action>
+    </item>
+    <item label="Log Out">
+      <action name="Exit" />
+    </item>
+    <separator/>
+    <item label="Reboot">
+      <action name="Execute"><command>pkexec systemctl reboot</command></action>
+    </item>
+    <item label="Power Off">
+      <action name="Execute"><command>pkexec systemctl poweroff</command></action>
+    </item>
+  </menu>
+
   <menu id="root-menu" label="TeamOS">
     <item label="Terminal (Alacritty)">
       <action name="Execute"><command>alacritty</command></action>
     </item>
     <item label="App Launcher (rofi)">
-      <action name="Execute"><command>rofi -show drun</command></action>
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/rofi-launcher</command></action>
+    </item>
+    <item label="Run Command">
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/rofi-runner</command></action>
+    </item>
+    <item label="Clipboard History">
+      <action name="Execute"><command>clipcat-menu --finder=rofi</command></action>
+    </item>
+    <item label="Control Center">
+      <action name="Execute"><command>$HOME/.config/openbox/scripts/rofi-quick-settings</command></action>
     </item>
     <separator/>
     <menu id="apps-internet"/>
@@ -57,8 +117,14 @@
     <menu id="apps-graphics"/>
     <menu id="apps-system"/>
     <menu id="apps-input"/>
+    <menu id="pipe-audio"/>
+    <menu id="pipe-brightness"/>
+    <menu id="pipe-network"/>
+    <menu id="pipe-display"/>
     <separator/>
     <menu id="client-list-menu" label="Windows"/>
+    <separator/>
+    <menu id="session-menu"/>
     <separator/>
     <menu id="openbox-menu" label="Openbox">
       <item label="Reconfigure">
@@ -66,10 +132,6 @@
       </item>
       <item label="Restart">
         <action name="Restart"/>
-      </item>
-      <separator/>
-      <item label="Exit">
-        <action name="Exit"/>
       </item>
     </menu>
   </menu>

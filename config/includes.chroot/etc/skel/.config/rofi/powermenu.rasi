@@ -1,0 +1,26 @@
+@import "shared-theme"
+
+window {
+  width: 24%;
+  location: center;
+  anchor: center;
+}
+
+mainbox {
+  children: [inputbar, listview];
+}
+
+inputbar {
+  children: [prompt];
+}
+
+prompt {
+  text-color: @accent;
+  str: "Session";
+}
+
+listview {
+  columns: 1;
+  lines: 5;
+  fixed-height: true;
+}

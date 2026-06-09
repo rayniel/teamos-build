@@ -1,0 +1,102 @@
+#!/bin/sh
+
+set -eu
+
+menu="$HOME/.config/rofi/runner.rasi"
+layouts_dir="$HOME/.config/openbox/themes/layouts"
+
+current_style="unknown"
+if [ -f "$HOME/.config/openbox/themes/.current-style" ]; then
+	current_style="$(cat "$HOME/.config/openbox/themes/.current-style")"
+fi
+
+original_style="$current_style"
+[ "$original_style" = "unknown" ] && original_style="ember"
+
+current_layout="balanced"
+if [ -f "$HOME/.config/openbox/themes/.current-layout" ]; then
+	current_layout="$(cat "$HOME/.config/openbox/themes/.current-layout")"
+fi
+
+describe_layout() {
+	preset="$1"
+	layout_src="$layouts_dir/$preset.conf"
+	topbar_size="n/a"
+	dock_size="n/a"
+	dock_autohide="n/a"
+	topbar_padding="n/a"
+	dock_padding="n/a"
+
+	if [ -f "$layout_src" ]; then
+		topbar_size="$(awk -F'"' '/^topbar_size=/{print $2; exit}' "$layout_src")"
+		dock_size="$(awk -F'"' '/^dock_size=/{print $2; exit}' "$layout_src")"
+		dock_autohide="$(awk -F'"' '/^dock_autohide=/{print $2; exit}' "$layout_src")"
+		topbar_padding="$(awk -F'"' '/^topbar_padding=/{print $2; exit}' "$layout_src")"
+		dock_padding="$(awk -F'"' '/^dock_padding=/{print $2; exit}' "$layout_src")"
+	fi
+
+	printf 'tb=%s pad=%s dock=%s dpad=%s hide=%s' "$topbar_size" "$topbar_padding" "$dock_size" "$dock_padding" "$dock_autohide"
+}
+
+ember_label='ember  :: copper dusk / warm contrast'
+slate_label='slate  :: steel blue / cool minimal'
+forest_label='forest :: moss glass / muted green'
+forest_vivid_label='forest-vivid :: neon canopy / glass glow'
+
+if [ "$current_style" = 'ember' ]; then
+	ember_label='ember  :: copper dusk / warm contrast [current]'
+elif [ "$current_style" = 'slate' ]; then
+	slate_label='slate  :: steel blue / cool minimal [current]'
+elif [ "$current_style" = 'forest' ]; then
+	forest_label='forest :: moss glass / muted green [current]'
+elif [ "$current_style" = 'forest-vivid' ]; then
+	forest_vivid_label='forest-vivid :: neon canopy / glass glow [current]'
+fi
+
+choice="$({
+	printf '%s\n' "Current: ${current_style}"
+	printf '%s\n' "$ember_label"
+	printf '%s\n' "$slate_label"
+	printf '%s\n' "$forest_label"
+	printf '%s\n' "$forest_vivid_label"
+} | rofi -dmenu -i -p 'TeamOS Style' -theme "$menu")"
+[ -z "$choice" ] && exit 0
+
+case "$choice" in
+	'Current: '*)
+		exit 0
+		;;
+esac
+
+style="$(printf '%s' "$choice" | awk '{print $1}')"
+
+[ "$style" = "$current_style" ] && exit 0
+
+"$HOME/.config/openbox/scripts/theme-apply" "$style" --quiet
+
+confirm_choice="$({
+	printf '%s\n' "Previewing: ${style}"
+	printf '%s\n' "Layout: ${current_layout}"
+	printf '%s\n' "Geometry: $(describe_layout "$current_layout")"
+	printf '%s\n' 'Apply Style'
+	printf '%s\n' 'Revert Preview'
+} | rofi -dmenu -i -p 'Style Preview' -theme "$menu")"
+
+case "$confirm_choice" in
+	'Apply Style')
+		exit 0
+		;;
+	'Layout: '*|'Geometry: '*)
+		"$HOME/.config/openbox/scripts/theme-apply" "$original_style" --quiet
+		exit 0
+		;;
+	'Previewing: '*)
+		"$HOME/.config/openbox/scripts/theme-apply" "$original_style" --quiet
+		exit 0
+		;;
+	*)
+		"$HOME/.config/openbox/scripts/theme-apply" "$original_style" --quiet
+		exit 0
+		;;
+esac
+

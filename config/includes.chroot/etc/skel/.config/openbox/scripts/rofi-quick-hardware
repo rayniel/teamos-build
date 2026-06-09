@@ -1,0 +1,119 @@
+#!/bin/sh
+
+set -eu
+
+menu="$HOME/.config/rofi/runner.rasi"
+
+wifi_item='Wi-Fi Toggle (Unavailable)'
+active_connection='none'
+if command -v nmcli >/dev/null 2>&1; then
+  wifi_state="$(nmcli -t -f WIFI g 2>/dev/null | head -n1)"
+  active_connection="$(nmcli -t -f NAME connection show --active 2>/dev/null | head -n1)"
+  [ -z "$active_connection" ] && active_connection='none'
+  case "$wifi_state" in
+    enabled)
+      wifi_item='Wi-Fi Toggle (Currently On)'
+      ;;
+    disabled)
+      wifi_item='Wi-Fi Toggle (Currently Off)'
+      ;;
+    *)
+      wifi_item='Wi-Fi Toggle (Unknown State)'
+      ;;
+  esac
+fi
+
+brightness_status='n/a'
+if command -v brightnessctl >/dev/null 2>&1; then
+  brightness_status="$(brightnessctl -m 2>/dev/null | awk -F',' '{print $4}')"
+elif command -v xbacklight >/dev/null 2>&1; then
+  brightness_status="$(xbacklight -get 2>/dev/null | awk '{printf("%.0f%%", $1)}')"
+fi
+
+volume_status='n/a'
+if command -v pactl >/dev/null 2>&1; then
+  mute_state="$(pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | awk '{print $2}')"
+  if [ "$mute_state" = 'yes' ]; then
+    volume_status='muted'
+  else
+    volume_status="$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk 'NR==1{print $5}')"
+  fi
+fi
+
+display_summary='n/a'
+if command -v xrandr >/dev/null 2>&1; then
+  display_summary="$(xrandr --query 2>/dev/null | awk '/ connected/{print $1}' | paste -sd ',' -)"
+  [ -z "$display_summary" ] && display_summary='none'
+fi
+
+battery_status='n/a'
+for capacity_file in /sys/class/power_supply/BAT*/capacity; do
+  if [ -r "$capacity_file" ]; then
+    battery_status="$(cat "$capacity_file" 2>/dev/null)%"
+    break
+  fi
+done
+
+choice="$({
+  printf '%s\n' "Status: vol=${volume_status} bri=${brightness_status} bat=${battery_status}"
+  printf '%s\n' "Status: wifi=${wifi_item#Wi-Fi Toggle } net=${active_connection}"
+  printf '%s\n' "Status: displays=${display_summary}"
+  printf '%s\n' 'Volume Up +5%'
+  printf '%s\n' 'Volume Down -5%'
+  printf '%s\n' 'Volume Mute Toggle'
+  printf '%s\n' 'Open Volume Mixer'
+  printf '%s\n' 'Brightness Up +5%'
+  printf '%s\n' 'Brightness Down -5%'
+  printf '%s\n' "$wifi_item"
+  printf '%s\n' 'Open Network Connections'
+  printf '%s\n' 'Open Display Layout'
+  printf '%s\n' 'Auto Detect Displays'
+  printf '%s\n' 'Back'
+} | rofi -dmenu -i -p 'Hardware Center' -theme "$menu")"
+
+[ -z "$choice" ] && exit 0
+
+case "$choice" in
+  'Volume Up +5%')
+    exec "$HOME/.config/openbox/scripts/teamos-volumectl" up 5
+    ;;
+  'Volume Down -5%')
+    exec "$HOME/.config/openbox/scripts/teamos-volumectl" down 5
+    ;;
+  'Volume Mute Toggle')
+    exec "$HOME/.config/openbox/scripts/teamos-volumectl" mute
+    ;;
+  'Open Volume Mixer')
+    exec pavucontrol
+    ;;
+  'Brightness Up +5%')
+    exec "$HOME/.config/openbox/scripts/teamos-brightnessctl" up 5
+    ;;
+  'Brightness Down -5%')
+    exec "$HOME/.config/openbox/scripts/teamos-brightnessctl" down 5
+    ;;
+  'Wi-Fi Toggle (Currently On)')
+    exec nmcli radio wifi off
+    ;;
+  'Wi-Fi Toggle (Currently Off)')
+    exec nmcli radio wifi on
+    ;;
+  'Wi-Fi Toggle (Unknown State)'|'Wi-Fi Toggle (Unavailable)')
+    exit 0
+    ;;
+  'Open Network Connections')
+    exec nm-connection-editor
+    ;;
+  'Open Display Layout')
+    exec arandr
+    ;;
+  'Auto Detect Displays')
+    exec xrandr --auto
+    ;;
+  'Status: '*)
+    exit 0
+    ;;
+  *)
+    exec "$HOME/.config/openbox/scripts/rofi-quick-settings"
+    ;;
+esac

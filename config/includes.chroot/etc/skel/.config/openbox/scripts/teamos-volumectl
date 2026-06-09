@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+step="${2:-5}"
+case "${1:-}" in
+  up)
+    pactl set-sink-volume @DEFAULT_SINK@ "+${step}%"
+    ;;
+  down)
+    pactl set-sink-volume @DEFAULT_SINK@ "-${step}%"
+    ;;
+  mute)
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+    ;;
+  *)
+    echo "Usage: teamos-volumectl {up|down|mute} [step-percent]" >&2
+    exit 1
+    ;;
+esac
+
+vol="$(pactl get-sink-volume @DEFAULT_SINK@ | awk 'NR==1{print $5}')"
+mute_state="$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')"
+
+if [ "$mute_state" = "yes" ]; then
+  dunstify -u low -h string:x-dunst-stack-tag:teamos-volume "Volume" "Muted" 2>/dev/null || true
+else
+  dunstify -u low -h string:x-dunst-stack-tag:teamos-volume "Volume" "$vol" 2>/dev/null || true
+fi

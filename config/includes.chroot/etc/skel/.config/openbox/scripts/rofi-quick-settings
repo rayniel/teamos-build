@@ -1,0 +1,116 @@
+#!/bin/sh
+
+set -eu
+
+menu="$HOME/.config/rofi/runner.rasi"
+
+trim_value() {
+  value="$1"
+  max_len="$2"
+
+  if [ "${#value}" -le "$max_len" ]; then
+    printf '%s' "$value"
+  else
+    printf '%s...' "$(printf '%s' "$value" | cut -c1-"$((max_len - 3))")"
+  fi
+}
+
+current_style="unknown"
+if [ -f "$HOME/.config/openbox/themes/.current-style" ]; then
+  current_style="$(cat "$HOME/.config/openbox/themes/.current-style")"
+fi
+
+wifi_status="n/a"
+active_connection="none"
+if command -v nmcli >/dev/null 2>&1; then
+  wifi_status="$(nmcli -t -f WIFI g 2>/dev/null | head -n1)"
+  active_connection="$(nmcli -t -f NAME connection show --active 2>/dev/null | head -n1)"
+  [ -z "$active_connection" ] && active_connection="none"
+fi
+
+volume_status="n/a"
+default_sink="n/a"
+if command -v pactl >/dev/null 2>&1; then
+  mute_state="$(pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | awk '{print $2}')"
+  if [ "$mute_state" = "yes" ]; then
+    volume_status="muted"
+  else
+    volume_status="$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk 'NR==1{print $5}')"
+  fi
+  default_sink="$(pactl get-default-sink 2>/dev/null || true)"
+  [ -z "$default_sink" ] && default_sink="n/a"
+fi
+
+brightness_status="n/a"
+if command -v brightnessctl >/dev/null 2>&1; then
+  brightness_status="$(brightnessctl -m 2>/dev/null | awk -F',' '{print $4}')"
+elif command -v xbacklight >/dev/null 2>&1; then
+  brightness_status="$(xbacklight -get 2>/dev/null | awk '{printf("%.0f%%", $1)}')"
+fi
+
+display_count="n/a"
+display_names="n/a"
+if command -v xrandr >/dev/null 2>&1; then
+  display_count="$(xrandr --query 2>/dev/null | awk '/ connected/{c++} END{if (c=="") c=0; print c}')"
+  display_names="$(xrandr --query 2>/dev/null | awk '/ connected/{print $1}' | paste -sd ',' -)"
+  [ -z "$display_names" ] && display_names="none"
+fi
+
+compositor_status="stopped"
+if pgrep -x picom >/dev/null 2>&1; then
+  compositor_status="running"
+fi
+
+power_status="n/a"
+if [ -r /sys/class/power_supply/AC/online ]; then
+  if [ "$(cat /sys/class/power_supply/AC/online 2>/dev/null)" = "1" ]; then
+    power_status="AC"
+  else
+    power_status="Battery"
+  fi
+elif [ -r /sys/class/power_supply/ACAD/online ]; then
+  if [ "$(cat /sys/class/power_supply/ACAD/online 2>/dev/null)" = "1" ]; then
+    power_status="AC"
+  else
+    power_status="Battery"
+  fi
+fi
+
+battery_status="n/a"
+for capacity_file in /sys/class/power_supply/BAT*/capacity; do
+  if [ -r "$capacity_file" ]; then
+    battery_status="$(cat "$capacity_file" 2>/dev/null)%"
+    break
+  fi
+done
+
+choice="$({
+  printf '%s\n' "Status: style=${current_style} comp=${compositor_status} displays=${display_count}"
+  printf '%s\n' "Status: outputs=$(trim_value "$display_names" 28) power=${power_status} bat=${battery_status}"
+  printf '%s\n' "Status: wifi=${wifi_status} net=$(trim_value "$active_connection" 20)"
+  printf '%s\n' "Status: vol=${volume_status} sink=$(trim_value "$default_sink" 18) bri=${brightness_status}"
+  printf '%s\n' 'Appearance Center'
+  printf '%s\n' 'Hardware Center'
+  printf '%s\n' 'Session Center'
+  printf '%s\n' 'Power Menu'
+} | rofi -dmenu -i -p 'TeamOS Control Center' -theme "$menu")"
+
+[ -z "$choice" ] && exit 0
+
+case "$choice" in
+  'Appearance Center')
+    exec "$HOME/.config/openbox/scripts/rofi-quick-appearance"
+    ;;
+  'Hardware Center')
+    exec "$HOME/.config/openbox/scripts/rofi-quick-hardware"
+    ;;
+  'Session Center')
+    exec "$HOME/.config/openbox/scripts/rofi-quick-session"
+    ;;
+  'Power Menu')
+    exec "$HOME/.config/openbox/scripts/rofi-powermenu"
+    ;;
+  'Status: '*)
+    exit 0
+    ;;
+esac

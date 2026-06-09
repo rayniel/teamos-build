@@ -315,6 +315,17 @@ config/includes.chroot/usr/local/bin/
 3. 仅在确有必要时添加具体 `bunsen-*` 包
 4. 团队品牌、文案与入口全部由本项目维护
 
+主题与图标策略（当前实现）：
+
+1. 不添加 BunsenLabs 第三方 APT 源，仅使用 Debian 默认源
+2. 从 GitHub 拉取 `bunsen-themes` 仓库并复制到 `/usr/share/themes/`
+3. 图标主题保持发行版默认值（不依赖 BunsenLabs 包名）
+4. 额外从 GitHub 拉取 `archcraft-openbox-themes`，将 `OB-*` 主题复制到 `/usr/share/themes/`（可通过环境变量 `TEAMOS_INSTALL_ARCHCRAFT_THEMES=0` 关闭）
+
+对应脚本：
+
+- `config/hooks/normal/0050-bunsenlabs-themes.hook.chroot`
+
 ---
 
 ## 12. 构建执行
@@ -327,29 +338,47 @@ config/includes.chroot/usr/local/bin/
 ./build.sh
 ```
 
+清理工作目录（保留共享缓存和产物）：
+
+```bash
+./build.sh clean
+```
+
+严格清理（工作目录、产物、缓存全部清空）：
+
+```bash
+./build.sh clean-all
+```
+
 如未准备好 `build.sh`，也可以手工执行：
 
 ```bash
-sudo lb clean --purge || true
+sudo lb clean || true
 lb config
 sudo lb build
 ```
 
 ### 12.2 构建产物
 
-成功后通常会生成：
+当前 `build.sh` 会把构建过程与产物统一放在项目内的 `out/` 目录：
 
-- `*.iso`
-- `binary/`
-- `chroot/`
-- 相关日志与缓存目录
+- `out/work/`：`live-build` 工作目录（`binary/`、`chroot/`、缓存等）
+- `out/artifacts/`：整理后的最终产物（如 `*.iso`、`live-image-*`、`build.log`）
+- `out/cache/`：持久化下载缓存（用于减少重复下载）
+
+说明：
+
+- `out/` 已加入 Git 忽略，不会污染源码提交
+- 默认构建会复用缓存，避免每次重下依赖
+- `out/work/cache` 会自动链接到 `out/cache`，无需搬运缓存目录
+- 直接执行 `./build.sh` 即可自动同步 `config/` 到工作目录并构建
 
 构建完成后应记录：
 
 - Git commit SHA
 - 构建时间
 - Debian 基线版本
-- 是否启用 BunsenLabs 软件源
+- 关键缓存策略（是否复用 `out/cache/`）
 
 ---
 

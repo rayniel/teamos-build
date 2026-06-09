@@ -23,7 +23,7 @@ procps
 iproute2
 iputils-ping
 net-tools
-dnsutils
+bind9-dnsutils
 openssh-client
 network-manager
 wpasupplicant

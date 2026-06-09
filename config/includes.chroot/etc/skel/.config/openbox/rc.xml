@@ -31,42 +31,42 @@
     <!-- Onyx comes from the openbox-themes package (in desktop.list.chroot). -->
     <!-- BunsenLabs GTK themes are installed via the hook 0050-bunsenlabs-themes. -->
     <!-- Change with: obconf -->
-    <name>Onyx</name>
-    <titleLayout>NDSLIMC</titleLayout>
+    <name>OB-Manhattan</name>
+    <titleLayout>LIMC</titleLayout>
     <keepBorder>yes</keepBorder>
     <animateIconify>no</animateIconify>
     <font place="ActiveWindow">
-      <name>Sans</name>
+      <name>Source Sans 3</name>
       <size>10</size>
       <weight>Bold</weight>
       <slant>Normal</slant>
     </font>
     <font place="InactiveWindow">
-      <name>Sans</name>
+      <name>Source Sans 3</name>
       <size>10</size>
       <weight>Normal</weight>
       <slant>Normal</slant>
     </font>
     <font place="MenuHeader">
-      <name>Sans</name>
+      <name>Source Sans 3</name>
       <size>10</size>
       <weight>Normal</weight>
       <slant>Normal</slant>
     </font>
     <font place="MenuItem">
-      <name>Sans</name>
+      <name>Source Sans 3</name>
       <size>10</size>
       <weight>Normal</weight>
       <slant>Normal</slant>
     </font>
     <font place="ActiveOnScreenDisplay">
-      <name>Sans</name>
+      <name>Source Sans 3</name>
       <size>10</size>
       <weight>normal</weight>
       <slant>normal</slant>
     </font>
     <font place="InactiveOnScreenDisplay">
-      <name>Sans</name>
+      <name>Source Sans 3</name>
       <size>10</size>
       <weight>normal</weight>
       <slant>normal</slant>
@@ -96,10 +96,10 @@
   </resize>
 
   <margins>
-    <top>0</top>
-    <bottom>0</bottom>
-    <left>0</left>
-    <right>0</right>
+    <top>56</top>
+    <bottom>76</bottom>
+    <left>12</left>
+    <right>12</right>
   </margins>
 
   <dock>
@@ -243,21 +243,21 @@
     <!-- File manager: Super+E -->
     <keybind key="W-e">
       <action name="Execute">
-        <startupnotify><enabled>true</enabled><name>Thunar</name></startupnotify>
-        <command>thunar</command>
+        <startupnotify><enabled>true</enabled><name>PCManFM</name></startupnotify>
+        <command>pcmanfm</command>
       </action>
     </keybind>
     <!-- App launcher (rofi): Super+Space or Super+R -->
     <keybind key="W-space">
       <action name="Execute">
         <startupnotify><enabled>false</enabled><name>rofi</name></startupnotify>
-        <command>rofi -show drun</command>
+        <command>$HOME/.config/openbox/scripts/rofi-launcher</command>
       </action>
     </keybind>
     <keybind key="W-r">
       <action name="Execute">
         <startupnotify><enabled>false</enabled><name>rofi</name></startupnotify>
-        <command>rofi -show run</command>
+        <command>$HOME/.config/openbox/scripts/rofi-runner</command>
       </action>
     </keybind>
     <!-- Window switcher: Super+W -->
@@ -281,13 +281,61 @@
     <!-- Screenshot: Print -->
     <keybind key="Print">
       <action name="Execute">
-        <command>scrot '%Y-%m-%d_%H%M%S.png' -e 'mv $f ~/Pictures/' 2>/dev/null || import -window root ~/Pictures/screenshot-$(date +%Y%m%d%H%M%S).png</command>
+        <command>$HOME/.config/openbox/scripts/screenshot-full</command>
       </action>
     </keybind>
     <!-- Lock screen: Super+L -->
     <keybind key="W-l">
       <action name="Execute">
         <command>xdg-screensaver lock</command>
+      </action>
+    </keybind>
+    <!-- Audio keys -->
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute">
+        <command>$HOME/.config/openbox/scripts/teamos-volumectl up 5</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute">
+        <command>$HOME/.config/openbox/scripts/teamos-volumectl down 5</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute">
+        <command>$HOME/.config/openbox/scripts/teamos-volumectl mute</command>
+      </action>
+    </keybind>
+    <!-- Brightness keys -->
+    <keybind key="XF86MonBrightnessUp">
+      <action name="Execute">
+        <command>$HOME/.config/openbox/scripts/teamos-brightnessctl up 5</command>
+      </action>
+    </keybind>
+    <keybind key="XF86MonBrightnessDown">
+      <action name="Execute">
+        <command>$HOME/.config/openbox/scripts/teamos-brightnessctl down 5</command>
+      </action>
+    </keybind>
+    <!-- Power menu: Super+X -->
+    <keybind key="W-x">
+      <action name="Execute">
+        <startupnotify><enabled>false</enabled><name>rofi-powermenu</name></startupnotify>
+        <command>$HOME/.config/openbox/scripts/rofi-powermenu</command>
+      </action>
+    </keybind>
+    <!-- Style switcher: Super+F5 -->
+    <keybind key="W-F5">
+      <action name="Execute">
+        <startupnotify><enabled>false</enabled><name>rofi-style</name></startupnotify>
+        <command>$HOME/.config/openbox/scripts/rofi-style</command>
+      </action>
+    </keybind>
+    <!-- Quick settings dashboard: Super+F6 -->
+    <keybind key="W-F6">
+      <action name="Execute">
+        <startupnotify><enabled>false</enabled><name>rofi-quick-settings</name></startupnotify>
+        <command>$HOME/.config/openbox/scripts/rofi-quick-settings</command>
       </action>
     </keybind>
   </keyboard>
@@ -521,12 +569,9 @@
     </context>
 
     <context name="Root">
-      <!-- Right-click: app launcher via rofi -->
+      <!-- Right-click: Openbox root menu -->
       <mousebind button="Right" action="Press">
-        <action name="Execute">
-          <startupnotify><enabled>false</enabled><name>rofi</name></startupnotify>
-          <command>rofi -show drun</command>
-        </action>
+        <action name="ShowMenu"><menu>root-menu</menu></action>
       </mousebind>
       <!-- Middle-click: window list -->
       <mousebind button="Middle" action="Press">
@@ -567,9 +612,41 @@
     <application class="*">
       <focus>yes</focus>
     </application>
+    <application name="firefox-esr">
+      <desktop>1</desktop>
+    </application>
+    <application name="Thunar">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>78%</width><height>76%</height></size>
+    </application>
     <!-- obconf window size -->
     <application name="obconf">
+      <position force="yes"><x>center</x><y>center</y></position>
       <size><width>33%</width><height>50%</height></size>
+    </application>
+    <application name="lxappearance">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>62%</width><height>70%</height></size>
+    </application>
+    <application name="Nitrogen">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>72%</width><height>78%</height></size>
+    </application>
+    <application name="pavucontrol">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>42%</width><height>58%</height></size>
+    </application>
+    <application name="galculator">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>24%</width><height>56%</height></size>
+    </application>
+    <application name="file-roller">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>64%</width><height>72%</height></size>
+    </application>
+    <application name="fcitx5-configtool">
+      <position force="yes"><x>center</x><y>center</y></position>
+      <size><width>68%</width><height>72%</height></size>
     </application>
     <!-- VLC: always centered -->
     <application name="vlc">

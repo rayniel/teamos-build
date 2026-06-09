@@ -1,0 +1,21 @@
+#!/bin/sh
+set -e
+
+echo "[teamos hook] Installing clipcat from GitHub release..."
+DEBIAN_FRONTEND=noninteractive apt-get install -y curl ca-certificates
+
+arch="$(dpkg --print-architecture)"
+clipcat_version="${TEAMOS_CLIPCAT_VERSION:-v0.25.0}"
+tmpdir="$(mktemp -d)"
+cleanup() {
+    rm -rf "$tmpdir"
+}
+trap cleanup EXIT INT TERM
+
+deb_path="$tmpdir/clipcat_${clipcat_version#v}_${arch}.deb"
+curl -fsSL -o "$deb_path" \
+    "https://github.com/xrelkd/clipcat/releases/download/${clipcat_version}/clipcat_${clipcat_version#v}_${arch}.deb"
+
+dpkg -i "$deb_path" || DEBIAN_FRONTEND=noninteractive apt-get install -fy
+
+echo "[teamos hook] Installed clipcat ${clipcat_version} for ${arch}."

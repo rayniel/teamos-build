@@ -1,0 +1,30 @@
+@import "shared-theme"
+
+window {
+  width: 30%;
+  location: north;
+  anchor: north;
+  y-offset: 72px;
+}
+
+mainbox {
+  children: [inputbar, listview];
+}
+
+inputbar {
+  children: [prompt, entry];
+}
+
+prompt {
+  text-color: @accent;
+  str: "Run";
+}
+
+entry {
+  placeholder: "Enter a command...";
+}
+
+listview {
+  columns: 1;
+  lines: 6;
+}

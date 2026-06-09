@@ -1,0 +1,49 @@
+# TeamOS bottom dock (short panel)
+
+panel_items = L
+panel_size = 48% 58
+panel_margin = 0 18
+panel_padding = 14 9 14
+panel_background_id = 1
+wm_menu = 0
+
+panel_position = bottom center horizontal
+panel_layer = top
+panel_monitor = all
+panel_shrink = 1
+strut_policy = none
+panel_window_name = tint2-dock
+autohide = 0
+autohide_show_timeout = 0.2
+autohide_hide_timeout = 0.6
+autohide_height = 8
+
+taskbar_mode = single_desktop
+taskbar_hide_if_empty = 1
+
+launcher_padding = 12 6 12
+launcher_background_id = 2
+launcher_icon_theme = hicolor
+
+launcher_item_app = /usr/share/applications/rofi.desktop
+launcher_item_app = /usr/share/applications/firefox-esr.desktop
+launcher_item_app = /usr/share/applications/pcmanfm.desktop
+launcher_item_app = /usr/share/applications/alacritty.desktop
+launcher_item_app = /usr/share/applications/mousepad.desktop
+
+mouse_middle = none
+mouse_right = none
+mouse_scroll_up = none
+mouse_scroll_down = none
+
+rounded = 16
+border_width = 1
+border_sides = TBLR
+background_color = #0e141a 88
+border_color = #2f4b63 100
+
+rounded = 12
+border_width = 0
+border_sides = TBLR
+background_color = #5ea0ef 0
+border_color = #5ea0ef 0

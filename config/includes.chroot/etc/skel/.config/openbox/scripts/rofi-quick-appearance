@@ -1,0 +1,190 @@
+#!/bin/sh
+
+set -eu
+
+menu="$HOME/.config/rofi/runner.rasi"
+
+trim_value() {
+  value="$1"
+  max_len="$2"
+
+  if [ "${#value}" -le "$max_len" ]; then
+    printf '%s' "$value"
+  else
+    printf '%s...' "$(printf '%s' "$value" | cut -c1-"$((max_len - 3))")"
+  fi
+}
+
+current_style="unknown"
+if [ -f "$HOME/.config/openbox/themes/.current-style" ]; then
+  current_style="$(cat "$HOME/.config/openbox/themes/.current-style")"
+fi
+
+current_layout="balanced"
+if [ -f "$HOME/.config/openbox/themes/.current-layout" ]; then
+  current_layout="$(cat "$HOME/.config/openbox/themes/.current-layout")"
+fi
+
+gtk_theme="n/a"
+if [ -r "$HOME/.config/gtk-3.0/settings.ini" ]; then
+  gtk_theme="$(awk -F= '/^gtk-theme-name=/{print $2; exit}' "$HOME/.config/gtk-3.0/settings.ini")"
+  [ -z "$gtk_theme" ] && gtk_theme="n/a"
+fi
+
+cursor_theme="n/a"
+if [ -r "$HOME/.config/gtk-3.0/settings.ini" ]; then
+  cursor_theme="$(awk -F= '/^gtk-cursor-theme-name=/{print $2; exit}' "$HOME/.config/gtk-3.0/settings.ini")"
+  [ -z "$cursor_theme" ] && cursor_theme="n/a"
+fi
+
+compositor_status="stopped"
+if pgrep -x picom >/dev/null 2>&1; then
+  compositor_status="running"
+fi
+
+wallpaper_status="not-set"
+if [ -r "$HOME/.config/nitrogen/bg-saved.cfg" ]; then
+  wallpaper_status="saved"
+fi
+
+wallpaper_name="none"
+if [ -r "$HOME/.config/nitrogen/bg-saved.cfg" ]; then
+  wallpaper_path="$(awk -F= '/^file=/{print $2; exit}' "$HOME/.config/nitrogen/bg-saved.cfg")"
+  if [ -n "$wallpaper_path" ]; then
+    wallpaper_name="$(basename "$wallpaper_path")"
+  fi
+fi
+
+title_layout="n/a"
+margin_summary="n/a"
+openbox_theme="n/a"
+if [ -r "$HOME/.config/openbox/rc.xml" ]; then
+  openbox_theme="$(awk -F'[<>]' '/<name>/{print $3; exit}' "$HOME/.config/openbox/rc.xml")"
+  title_layout="$(awk -F'[<>]' '/<titleLayout>/{print $3; exit}' "$HOME/.config/openbox/rc.xml")"
+  margin_top="$(awk -F'[<>]' '/<top>/{print $3; exit}' "$HOME/.config/openbox/rc.xml")"
+  margin_bottom="$(awk -F'[<>]' '/<bottom>/{print $3; exit}' "$HOME/.config/openbox/rc.xml")"
+  margin_left="$(awk -F'[<>]' '/<left>/{print $3; exit}' "$HOME/.config/openbox/rc.xml")"
+  margin_right="$(awk -F'[<>]' '/<right>/{print $3; exit}' "$HOME/.config/openbox/rc.xml")"
+  if [ -n "$margin_top" ] && [ -n "$margin_bottom" ] && [ -n "$margin_left" ] && [ -n "$margin_right" ]; then
+    margin_summary="${margin_top}/${margin_bottom}/${margin_left}/${margin_right}"
+  fi
+fi
+
+blur_method="n/a"
+blur_strength="n/a"
+inactive_opacity="n/a"
+frame_opacity="n/a"
+if [ -r "$HOME/.config/picom.conf" ]; then
+  blur_method="$(awk -F'"' '/blur-method/{print $2; exit}' "$HOME/.config/picom.conf")"
+  [ -z "$blur_method" ] && blur_method="none"
+  blur_strength="$(awk -F'= *|;' '/blur-strength/{gsub(/ /, "", $2); print $2; exit}' "$HOME/.config/picom.conf")"
+  [ -z "$blur_strength" ] && blur_strength="0"
+  inactive_opacity="$(awk -F'= *|;' '/inactive-opacity/{gsub(/ /, "", $2); print $2; exit}' "$HOME/.config/picom.conf")"
+  [ -z "$inactive_opacity" ] && inactive_opacity="n/a"
+  frame_opacity="$(awk -F'= *|;' '/frame-opacity/{gsub(/ /, "", $2); print $2; exit}' "$HOME/.config/picom.conf")"
+  [ -z "$frame_opacity" ] && frame_opacity="n/a"
+fi
+
+rofi_main_padding="n/a"
+rofi_list_spacing="n/a"
+if [ -r "$HOME/.config/rofi/shared-theme.rasi" ]; then
+  rofi_main_padding="$(awk '/mainbox[[:space:]]*\{/{in_block=1; next} in_block && /padding:/{gsub(/[^0-9]/, "", $0); print $0; exit} in_block && /}/{in_block=0}' "$HOME/.config/rofi/shared-theme.rasi")"
+  [ -z "$rofi_main_padding" ] && rofi_main_padding="n/a"
+  rofi_list_spacing="$(awk '/listview[[:space:]]*\{/{in_block=1; next} in_block && /spacing:/{gsub(/[^0-9]/, "", $0); print $0; exit} in_block && /}/{in_block=0}' "$HOME/.config/rofi/shared-theme.rasi")"
+  [ -z "$rofi_list_spacing" ] && rofi_list_spacing="n/a"
+fi
+
+dunst_width="n/a"
+dunst_offset="n/a"
+if [ -r "$HOME/.config/dunst/dunstrc" ]; then
+  dunst_width="$(awk -F'= ' '/^width =/{print $2; exit}' "$HOME/.config/dunst/dunstrc")"
+  [ -z "$dunst_width" ] && dunst_width="n/a"
+  dunst_offset="$(awk -F'= ' '/^offset =/{print $2; exit}' "$HOME/.config/dunst/dunstrc")"
+  [ -z "$dunst_offset" ] && dunst_offset="n/a"
+fi
+
+topbar_layout="n/a"
+topbar_size="n/a"
+topbar_padding="n/a"
+if [ -r "$HOME/.config/tint2/tint2rc" ]; then
+  topbar_position="$(awk -F'= ' '/^panel_position =/{print $2; exit}' "$HOME/.config/tint2/tint2rc")"
+  topbar_size="$(awk -F'= ' '/^panel_size =/{print $2; exit}' "$HOME/.config/tint2/tint2rc")"
+  topbar_padding="$(awk -F'= ' '/^panel_padding =/{print $2; exit}' "$HOME/.config/tint2/tint2rc")"
+  [ -n "$topbar_position" ] && [ -n "$topbar_size" ] && topbar_layout="$(trim_value "$topbar_position" 16) @ $topbar_size"
+fi
+
+dock_layout="n/a"
+dock_size="n/a"
+dock_padding="n/a"
+if [ -r "$HOME/.config/tint2/tint2-dockrc" ]; then
+  dock_position="$(awk -F'= ' '/^panel_position =/{print $2; exit}' "$HOME/.config/tint2/tint2-dockrc")"
+  dock_size="$(awk -F'= ' '/^panel_size =/{print $2; exit}' "$HOME/.config/tint2/tint2-dockrc")"
+  dock_padding="$(awk -F'= ' '/^panel_padding =/{print $2; exit}' "$HOME/.config/tint2/tint2-dockrc")"
+  dock_autohide="$(awk -F'= ' '/^autohide =/{print $2; exit}' "$HOME/.config/tint2/tint2-dockrc")"
+  [ -z "$dock_autohide" ] && dock_autohide="n/a"
+  [ -n "$dock_position" ] && [ -n "$dock_size" ] && dock_layout="$(trim_value "$dock_position" 16) @ $dock_size hide=$dock_autohide"
+fi
+
+choice="$({
+  printf '%s\n' "Status: style=${current_style} layout=${current_layout} gtk=${gtk_theme} ob=${openbox_theme}"
+  printf '%s\n' "Status: cursor=${cursor_theme} picom=${compositor_status} wallpaper=${wallpaper_status}"
+  printf '%s\n' "Status: wp=$(trim_value "$wallpaper_name" 20) layout=${title_layout} margins=${margin_summary}"
+  printf '%s\n' "Status: blur=${blur_method}/${blur_strength} inactive=${inactive_opacity} frame=${frame_opacity}"
+  printf '%s\n' "Status: preset=${current_layout} tb=${topbar_size} dock=${dock_size}"
+  printf '%s\n' "Status: pad tb=${topbar_padding} dock=${dock_padding}"
+  printf '%s\n' "Status: rofi pad=${rofi_main_padding} list=${rofi_list_spacing} dunst=${dunst_width}@${dunst_offset}"
+  printf '%s\n' "Status: topbar=$(trim_value "$topbar_layout" 30)"
+  printf '%s\n' "Status: dock=$(trim_value "$dock_layout" 30)"
+  printf '%s\n' 'Reload Current Style'
+  printf '%s\n' 'Reflow Desktop Layout'
+  printf '%s\n' 'Switch Layout Preset'
+  printf '%s\n' 'Restart Panels'
+  printf '%s\n' 'Restore Wallpaper'
+  printf '%s\n' 'Switch Style'
+  printf '%s\n' 'Open Wallpaper Manager'
+  printf '%s\n' 'Restart Compositor'
+  printf '%s\n' 'Open GTK Appearance'
+  printf '%s\n' 'Open Openbox Config'
+  printf '%s\n' 'Back'
+} | rofi -dmenu -i -p 'Appearance Center' -theme "$menu")"
+
+[ -z "$choice" ] && exit 0
+
+case "$choice" in
+  'Reload Current Style')
+    exec "$HOME/.config/openbox/scripts/theme-apply" --auto
+    ;;
+  'Reflow Desktop Layout')
+    sh -c '"$HOME/.config/openbox/scripts/theme-apply" --auto --quiet; nitrogen --restore 2>/dev/null || true; openbox --reconfigure 2>/dev/null || true'
+    ;;
+  'Switch Layout Preset')
+    exec "$HOME/.config/openbox/scripts/rofi-layout"
+    ;;
+  'Restart Panels')
+    sh -c 'pkill -x tint2 2>/dev/null || true; tint2 -c "$HOME/.config/tint2/tint2rc" & tint2 -c "$HOME/.config/tint2/tint2-dockrc" &'
+    ;;
+  'Restore Wallpaper')
+    exec nitrogen --restore
+    ;;
+  'Switch Style')
+    exec "$HOME/.config/openbox/scripts/rofi-style"
+    ;;
+  'Open Wallpaper Manager')
+    exec nitrogen
+    ;;
+  'Restart Compositor')
+    sh -c 'pkill -x picom 2>/dev/null || true; picom &'
+    ;;
+  'Open GTK Appearance')
+    exec lxappearance
+    ;;
+  'Open Openbox Config')
+    exec obconf
+    ;;
+  'Status: '*)
+    exit 0
+    ;;
+  *)
+    exec "$HOME/.config/openbox/scripts/rofi-quick-settings"
+    ;;
+esac
