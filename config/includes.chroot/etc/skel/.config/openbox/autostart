@@ -15,8 +15,14 @@ if [ -x "$HOME/.config/openbox/scripts/theme-apply" ]; then
 	"$HOME/.config/openbox/scripts/theme-apply" --auto --quiet
 fi
 
-## Wallpaper (nitrogen --save to store a selection first)
-nitrogen --restore &
+## Wallpaper
+default_wallpaper="/usr/share/backgrounds/teamos/default.xpm"
+if [ -r "$HOME/.config/nitrogen/bg-saved.cfg" ]; then
+	nitrogen --restore &
+elif [ -r "$default_wallpaper" ]; then
+	mkdir -p "$HOME/.config/nitrogen"
+	nitrogen --set-zoom-fill "$default_wallpaper" >/dev/null 2>&1 &
+fi
 
 ## Compositor (picom for transparency/shadows)
 picom &
@@ -25,6 +31,19 @@ picom &
 pkill -x tint2 2>/dev/null || true
 tint2 -c "$HOME/.config/tint2/tint2rc" &
 tint2 -c "$HOME/.config/tint2/tint2-dockrc" &
+
+## Tray applets
+if command -v nm-applet >/dev/null 2>&1 && ! pgrep -x nm-applet >/dev/null 2>&1; then
+	nm-applet &
+fi
+
+if command -v pasystray >/dev/null 2>&1 && ! pgrep -x pasystray >/dev/null 2>&1; then
+	pasystray &
+fi
+
+if command -v lxpolkit >/dev/null 2>&1 && ! pgrep -x lxpolkit >/dev/null 2>&1; then
+	lxpolkit &
+fi
 
 ## Notification daemon
 dunst &

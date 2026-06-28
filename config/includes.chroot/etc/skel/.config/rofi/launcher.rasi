@@ -1,11 +1,11 @@
 @import "shared-theme"
 
 window {
-  width: 34%;
+  width: 30%;
   location: north;
   anchor: north;
   x-offset: 0px;
-  y-offset: 58px;
+  y-offset: 52px;
 }
 
 mainbox {
@@ -18,16 +18,16 @@ inputbar {
 
 prompt {
   text-color: @accent;
-  str: "Launch";
+  str: "Applications";
 }
 
 entry {
-  placeholder: "Search apps, actions, and files...";
+  placeholder: "Search installed applications...";
 }
 
 listview {
   columns: 1;
-  lines: 10;
+  lines: 12;
 }
 
 mode-switcher {

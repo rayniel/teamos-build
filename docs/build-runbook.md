@@ -446,6 +446,19 @@ Live 模式：
 - [ ] 安装器可运行（如该版本包含）
 - [ ] 安装后系统可启动
 
+建议先执行一次包清单校验，确认镜像内关键桌面组件没有在构建过程中漏装：
+
+```bash
+chmod +x ./scripts/check-artifact-packages.sh
+./scripts/check-artifact-packages.sh
+```
+
+如需显式指定产物，也可以传入 ISO 或 `filesystem.packages` 路径：
+
+```bash
+./scripts/check-artifact-packages.sh ./out/artifacts/live-image-amd64.hybrid.iso
+```
+
 建议同时参考：
 
 - `docs/branding-checklist.md`

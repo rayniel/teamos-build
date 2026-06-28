@@ -26,6 +26,7 @@ launcher_background_id = 2
 launcher_icon_theme = hicolor
 
 launcher_item_app = /usr/share/applications/rofi.desktop
+launcher_item_app = /usr/share/applications/teamos-control-center.desktop
 launcher_item_app = /usr/share/applications/firefox-esr.desktop
 launcher_item_app = /usr/share/applications/pcmanfm.desktop
 launcher_item_app = /usr/share/applications/alacritty.desktop

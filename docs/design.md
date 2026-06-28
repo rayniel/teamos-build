@@ -212,7 +212,7 @@ team-os-build/
 - obconf
 - nitrogen
 - 文件管理器（如 thunar 或 pcmanfm）
-- 终端（如 xfce4-terminal）
+- 终端（如 alacritty）
 - 浏览器（如 firefox-esr）
 - lightdm（如采用图形登录）
 

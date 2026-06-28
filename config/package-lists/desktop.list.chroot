@@ -10,8 +10,6 @@ polkitd
 pkexec
 openbox
 obconf
-menu
-menu-xdg
 tint2
 nitrogen
 picom
@@ -34,6 +32,8 @@ galculator
 pavucontrol
 arandr
 network-manager-gnome
+pasystray
+lxpolkit
 
 # Fonts: Chinese, Google, Source Han-style coverage, and programming fonts
 fonts-noto-core

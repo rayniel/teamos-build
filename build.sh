@@ -73,6 +73,8 @@ if [[ "${command}" != "build" ]]; then
 fi
 
 mkdir -p "${work_dir}" "${artifacts_dir}"
+normalize_out_ownership
+remove_path_best_effort "${work_dir}/config"
 rsync -a --delete "${script_dir}/config/" "${work_dir}/config/"
 normalize_out_ownership
 

@@ -107,9 +107,6 @@ policykit-1
 ```text
 openbox
 obconf
-obmenu
-menu
-menu-xdg
 tint2
 nitrogen
 picom
@@ -126,7 +123,7 @@ thunar-archive-plugin
 thunar-volman
 gvfs
 gvfs-backends
-xfce4-terminal
+alacritty
 file-roller
 p7zip-full
 unzip
@@ -163,7 +160,7 @@ fcitx5-configtool
 
 - 以 Openbox 为核心，保持轻量
 - 文件管理器优先选 `thunar`，生态稳定、依赖适中
-- 终端默认 `xfce4-terminal`
+- 终端默认 `alacritty`
 - 中文环境如为刚需，建议第一版就纳入字体与输入法
 
 ---

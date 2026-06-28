@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=All Applications
+Comment=Browse and launch installed applications
+Exec=/usr/bin/teamos-apps-menu
+Icon=teamos
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=false

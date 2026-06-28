@@ -29,6 +29,11 @@ clock_font_color = #f5efe4 100
 clock_tooltip = %A %B %d
 clock_background_id = 2
 
+systray_padding = 8 4 8
+systray_background_id = 2
+systray_sort = ascending
+systray_monitor = primary
+
 launcher_padding = 10 4 10
 launcher_background_id = 2
 launcher_icon_theme = hicolor

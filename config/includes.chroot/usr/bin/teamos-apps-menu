@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+theme_path="$HOME/.config/rofi/launcher.rasi"
+
+if [ -r "$theme_path" ]; then
+  exec rofi -show drun -show-icons -drun-display-format '{name}' -theme "$theme_path"
+fi
+
+exec rofi -show drun -show-icons -drun-display-format '{name}'

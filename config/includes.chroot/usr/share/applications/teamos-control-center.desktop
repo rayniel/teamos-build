@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TeamOS Control Center
+Comment=Open TeamOS quick settings and desktop controls
+Exec=/usr/bin/teamos-control-center
+Icon=preferences-desktop
+Terminal=false
+Type=Application
+Categories=Settings;DesktopSettings;
+StartupNotify=false
